@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"flag"
 	"fmt"
 	"log"
 	"os"
@@ -14,17 +15,18 @@ import (
 	"github.com/grum261/event-calendar/internal/rest"
 	"github.com/grum261/event-calendar/internal/service"
 	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/joho/godotenv"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
 
 func main() {
-	// var envPath string
+	var envPath string
 
-	// flag.StringVar(&envPath, "env", "", "")
-	// flag.Parse()
+	flag.StringVar(&envPath, "env", "", "")
+	flag.Parse()
 
-	errCh, err := run("")
+	errCh, err := run(envPath)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -43,7 +45,7 @@ type serverConfig struct {
 
 func newServer(conf serverConfig) (*fiber.App, error) {
 	app := fiber.New(fiber.Config{
-		ReadTimeout:  time.Second,
+		ReadTimeout:  time.Minute,
 		WriteTimeout: time.Second,
 		IdleTimeout:  time.Second,
 	})
@@ -64,9 +66,9 @@ func newServer(conf serverConfig) (*fiber.App, error) {
 }
 
 func run(env string) (<-chan error, error) {
-	// if err := godotenv.Load(env); err != nil {
-	// 	log.Fatal(err)
-	// }
+	if err := godotenv.Load(env); err != nil {
+		return nil, err
+	}
 
 	logger, err := zap.NewProduction()
 	if err != nil {
@@ -129,16 +131,18 @@ func run(env string) (<-chan error, error) {
 
 		logger.Info("Получен сигнал остановки сервера")
 
+		ctxTimeout, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+
 		defer func() {
 			_ = logger.Sync()
 
 			pool.Close()
 			stop()
+			cancel()
 			close(errCh)
 		}()
 
-		srv.Server().TCPKeepalive = false
-		srv.Server().ReadTimeout = 5 * time.Second
+		<-ctxTimeout.Done()
 
 		if err := srv.Shutdown(); err != nil {
 			errCh <- err
