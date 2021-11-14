@@ -45,7 +45,7 @@ type serverConfig struct {
 
 func newServer(conf serverConfig) (*fiber.App, error) {
 	app := fiber.New(fiber.Config{
-		ReadTimeout:  time.Minute,
+		ReadTimeout:  time.Second,
 		WriteTimeout: time.Second,
 		IdleTimeout:  time.Second,
 	})
