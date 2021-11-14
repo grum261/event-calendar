@@ -140,8 +140,6 @@ func run(env string) (<-chan error, error) {
 		srv.Server().TCPKeepalive = false
 		srv.Server().ReadTimeout = 5 * time.Second
 
-		srv.Shutdown()
-
 		if err := srv.Shutdown(); err != nil {
 			errCh <- err
 		}
