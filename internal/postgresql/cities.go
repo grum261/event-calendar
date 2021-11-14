@@ -1,36 +1,37 @@
-package pgdb
+package postgresql
 
 import (
 	"context"
 
 	"github.com/grum261/event-calendar/internal/models"
+	"github.com/grum261/event-calendar/internal/postgresql/db"
 	"github.com/jackc/pgx/v4/pgxpool"
 )
 
 type City struct {
-	q *Queries
+	q *db.Queries
 }
 
-func newCity(db *pgxpool.Pool) *City {
+func newCity(pool *pgxpool.Pool) *City {
 	return &City{
-		q: newQueries(db),
+		q: db.NewQueries(pool),
 	}
 }
 
 func (c *City) Create(ctx context.Context, name string, timezone int) (int, error) {
-	return c.q.cityInsert(ctx, name, timezone)
+	return c.q.CityInsert(ctx, name, timezone)
 }
 
 func (c *City) Update(ctx context.Context, id, timezone int, name string) error {
-	return c.q.cityUpdate(ctx, id, timezone, name)
+	return c.q.CityUpdate(ctx, id, timezone, name)
 }
 
 func (c *City) Delete(ctx context.Context, id int) error {
-	return c.q.cityDelete(ctx, id)
+	return c.q.CityDelete(ctx, id)
 }
 
 func (c *City) GetAll(ctx context.Context) ([]models.City, error) {
-	cities, err := c.q.citiesSelectAll(ctx)
+	cities, err := c.q.CitiesSelectAll(ctx)
 	if err != nil {
 		return nil, err
 	}

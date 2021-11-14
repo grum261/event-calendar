@@ -73,15 +73,16 @@ func (e *EventHandler) create(c *fiber.Ctx) error {
 	// TODO: прописать логику для ивента, проходящего 1 день и у которого нет частей
 	for _, ep := range req.EventParts {
 		p.EventParts = append(p.EventParts, models.EventPartCreateParameters{
-			EventId:     ep.EventId,
-			Name:        ep.Name,
-			Address:     ep.Address,
-			Description: ep.Description,
-			CityId:      ep.CityId,
-			StartTime:   ep.StartTime,
-			EndTime:     ep.EndTime,
-			Place:       ep.Place,
-			Age:         ep.Age,
+			EventId: ep.EventId,
+			EventPartInsertUpdateParams: models.EventPartInsertUpdateParams{
+				Name:        ep.Name,
+				Address:     ep.Address,
+				Description: ep.Description,
+				StartTime:   ep.StartTime,
+				EndTime:     ep.EndTime,
+				Place:       ep.Place,
+				Age:         ep.Age,
+			},
 		})
 	}
 
@@ -144,15 +145,16 @@ func (e *EventHandler) update(c *fiber.Ctx) error {
 
 	for _, ep := range req.EventParts {
 		p.EventParts = append(p.EventParts, models.EventPartUpdateParameters{
-			Id:          ep.Id,
-			Name:        ep.Name,
-			Address:     ep.Address,
-			Description: ep.Description,
-			CityId:      ep.CityId,
-			StartTime:   ep.StartTime,
-			EndTime:     ep.EndTime,
-			Place:       ep.Place,
-			Age:         ep.Age,
+			Id: ep.Id,
+			EventPartInsertUpdateParams: models.EventPartInsertUpdateParams{
+				Name:        ep.Name,
+				Address:     ep.Address,
+				Description: ep.Description,
+				StartTime:   ep.StartTime,
+				EndTime:     ep.EndTime,
+				Place:       ep.Place,
+				Age:         ep.Age,
+			},
 		})
 
 		*res.EventParts = append(*res.EventParts, EventPartResponse{

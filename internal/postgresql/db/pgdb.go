@@ -1,4 +1,4 @@
-package pgdb
+package db
 
 import (
 	"context"
@@ -7,7 +7,7 @@ import (
 	"github.com/jackc/pgx/v4"
 )
 
-type PGDB interface {
+type postgresql interface {
 	Begin(context.Context) (pgx.Tx, error)
 	Query(context.Context, string, ...interface{}) (pgx.Rows, error)
 	QueryRow(context.Context, string, ...interface{}) pgx.Row
@@ -15,13 +15,17 @@ type PGDB interface {
 }
 
 type Queries struct {
-	db PGDB
+	db postgresql
 }
 
-func newQueries(db PGDB) *Queries {
+func NewQueries(db postgresql) *Queries {
 	return &Queries{
 		db: db,
 	}
+}
+
+func (q *Queries) Begin(ctx context.Context) (pgx.Tx, error) {
+	return q.db.Begin(ctx)
 }
 
 func (q *Queries) WithTx(tx pgx.Tx) *Queries {

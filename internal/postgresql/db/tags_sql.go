@@ -1,13 +1,13 @@
-package pgdb
+package db
 
 import "context"
 
-type tagReturn struct {
+type TagReturn struct {
 	Id   int
 	Name string
 }
 
-func (q *Queries) tagsInsert(ctx context.Context, names []string) ([]int, error) {
+func (q *Queries) TagsInsert(ctx context.Context, names []string) ([]int, error) {
 	rows, err := q.db.Query(ctx, tagsInsert, names)
 	if err != nil {
 		return nil, err
@@ -29,7 +29,7 @@ func (q *Queries) tagsInsert(ctx context.Context, names []string) ([]int, error)
 	return ids, nil
 }
 
-func (q *Queries) tagNameUpdate(ctx context.Context, id int, name string) error {
+func (q *Queries) TagNameUpdate(ctx context.Context, id int, name string) error {
 	if _, err := q.db.Exec(ctx, tagNameUpdate, id, name); err != nil {
 		return err
 	}
@@ -37,7 +37,7 @@ func (q *Queries) tagNameUpdate(ctx context.Context, id int, name string) error 
 	return nil
 }
 
-func (q *Queries) tagDelete(ctx context.Context, id int) error {
+func (q *Queries) TagDelete(ctx context.Context, id int) error {
 	if _, err := q.db.Exec(ctx, tagDelete, id); err != nil {
 		return err
 	}
@@ -45,17 +45,17 @@ func (q *Queries) tagDelete(ctx context.Context, id int) error {
 	return nil
 }
 
-func (q *Queries) tagsSelectAll(ctx context.Context) ([]tagReturn, error) {
+func (q *Queries) TagsSelectAll(ctx context.Context) ([]TagReturn, error) {
 	rows, err := q.db.Query(ctx, tagsSelect)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
-	var tags []tagReturn
+	var tags []TagReturn
 
 	for rows.Next() {
-		var tag tagReturn
+		var tag TagReturn
 
 		if err := rows.Scan(&tag.Id, &tag.Name); err != nil {
 			return nil, err

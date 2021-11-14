@@ -1,19 +1,20 @@
-package pgdb
+package postgresql
 
 import (
 	"context"
 
 	"github.com/grum261/event-calendar/internal/models"
+	"github.com/grum261/event-calendar/internal/postgresql/db"
 	"github.com/jackc/pgx/v4/pgxpool"
 )
 
 type EventPart struct {
-	q *Queries
+	q *db.Queries
 }
 
-func newEventPart(db *pgxpool.Pool) *EventPart {
+func newEventPart(pool *pgxpool.Pool) *EventPart {
 	return &EventPart{
-		q: newQueries(db),
+		q: db.NewQueries(pool),
 	}
 }
 
@@ -43,19 +44,20 @@ func newEventPart(db *pgxpool.Pool) *EventPart {
 // }
 
 func (e *EventPart) Update(ctx context.Context, p models.EventPartUpdateParameters) error {
-	return e.q.eventPartUpdate(ctx, eventPartUpdateParameters{
-		Id:          p.Id,
-		Name:        p.Name,
-		CityId:      p.CityId,
-		Description: p.Description,
-		StartTime:   p.StartTime,
-		EndTime:     p.EndTime,
-		Address:     p.Address,
-		Place:       p.Place,
-		Age:         p.Age,
+	return e.q.EventPartUpdate(ctx, db.EventPartUpdateParameters{
+		Id: p.Id,
+		EventPartCommonParams: db.EventPartCommonParams{
+			Name:        p.Name,
+			Description: p.Description,
+			StartTime:   p.StartTime,
+			EndTime:     p.EndTime,
+			Address:     p.Address,
+			Place:       p.Place,
+			Age:         p.Age,
+		},
 	})
 }
 
 func (e *EventPart) Delete(ctx context.Context, id int) error {
-	return e.q.deleteEventParts(ctx, id)
+	return e.q.EventPartsDelete(ctx, id)
 }

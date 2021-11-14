@@ -7,30 +7,25 @@ type EventPart struct {
 	Name        string
 	Address     string
 	Description string
-	CityId      int
 	StartTime   time.Time
 	EndTime     time.Time
 	Place       string
 }
 
 type EventPartCreateParameters struct {
-	EventId     int
-	Name        string
-	Address     string
-	Description string
-	CityId      int
-	StartTime   time.Time
-	EndTime     time.Time
-	Place       string
-	Age         int
+	EventId int
+	EventPartInsertUpdateParams
 }
 
 type EventPartUpdateParameters struct {
-	Id          int
+	Id int
+	EventPartInsertUpdateParams
+}
+
+type EventPartInsertUpdateParams struct {
 	Name        string
 	Address     string
 	Description string
-	CityId      int
 	StartTime   time.Time
 	EndTime     time.Time
 	Place       string

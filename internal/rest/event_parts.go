@@ -41,7 +41,6 @@ type EventPartCreateRequest struct {
 	Place       string    `json:"place"`
 	StartTime   time.Time `json:"startTime"`
 	EndTime     time.Time `json:"endTime"`
-	CityId      int       `json:"cityID"`
 	EventId     int       `json:"eventID"`
 }
 
@@ -54,5 +53,4 @@ type EventPartUpdateRequest struct {
 	Place       string    `json:"place"`
 	StartTime   time.Time `json:"startTime"`
 	EndTime     time.Time `json:"endTime"`
-	CityId      int       `json:"cityID"`
 }

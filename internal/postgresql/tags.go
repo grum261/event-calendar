@@ -1,24 +1,25 @@
-package pgdb
+package postgresql
 
 import (
 	"context"
 
 	"github.com/grum261/event-calendar/internal/models"
+	"github.com/grum261/event-calendar/internal/postgresql/db"
 	"github.com/jackc/pgx/v4/pgxpool"
 )
 
 type Tag struct {
-	q *Queries
+	q *db.Queries
 }
 
-func newTag(db *pgxpool.Pool) *Tag {
+func newTag(pool *pgxpool.Pool) *Tag {
 	return &Tag{
-		q: newQueries(db),
+		q: db.NewQueries(pool),
 	}
 }
 
 func (t *Tag) Create(ctx context.Context, names []string) ([]int, error) {
-	ids, err := t.q.tagsInsert(ctx, names)
+	ids, err := t.q.TagsInsert(ctx, names)
 	if err != nil {
 		return nil, err
 	}
@@ -27,15 +28,15 @@ func (t *Tag) Create(ctx context.Context, names []string) ([]int, error) {
 }
 
 func (t *Tag) Update(ctx context.Context, id int, name string) error {
-	return t.q.tagNameUpdate(ctx, id, name)
+	return t.q.TagNameUpdate(ctx, id, name)
 }
 
 func (t *Tag) Delete(ctx context.Context, id int) error {
-	return t.q.tagDelete(ctx, id)
+	return t.q.TagDelete(ctx, id)
 }
 
 func (t *Tag) GetAll(ctx context.Context) ([]models.Tag, error) {
-	tags, err := t.q.tagsSelectAll(ctx)
+	tags, err := t.q.TagsSelectAll(ctx)
 	if err != nil {
 		return nil, err
 	}

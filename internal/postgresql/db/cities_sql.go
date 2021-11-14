@@ -1,14 +1,14 @@
-package pgdb
+package db
 
 import "context"
 
-type cityReturn struct {
+type CityReturn struct {
 	Id       int
 	Name     string
 	Timezone int
 }
 
-func (q *Queries) cityInsert(ctx context.Context, name string, timezone int) (int, error) {
+func (q *Queries) CityInsert(ctx context.Context, name string, timezone int) (int, error) {
 	var id int
 
 	if err := q.db.QueryRow(ctx, cityInsert, name, timezone).Scan(&id); err != nil {
@@ -18,7 +18,7 @@ func (q *Queries) cityInsert(ctx context.Context, name string, timezone int) (in
 	return id, nil
 }
 
-func (q *Queries) cityUpdate(ctx context.Context, id, timezone int, name string) error {
+func (q *Queries) CityUpdate(ctx context.Context, id, timezone int, name string) error {
 	if _, err := q.db.Exec(ctx, cityUpdate, id, name, timezone); err != nil {
 		return err
 	}
@@ -26,7 +26,7 @@ func (q *Queries) cityUpdate(ctx context.Context, id, timezone int, name string)
 	return nil
 }
 
-func (q *Queries) cityDelete(ctx context.Context, id int) error {
+func (q *Queries) CityDelete(ctx context.Context, id int) error {
 	if _, err := q.db.Exec(ctx, cityDelete, id); err != nil {
 		return err
 	}
@@ -34,17 +34,17 @@ func (q *Queries) cityDelete(ctx context.Context, id int) error {
 	return nil
 }
 
-func (q *Queries) citiesSelectAll(ctx context.Context) ([]cityReturn, error) {
+func (q *Queries) CitiesSelectAll(ctx context.Context) ([]CityReturn, error) {
 	rows, err := q.db.Query(ctx, citiesSelectAll)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
-	var cities []cityReturn
+	var cities []CityReturn
 
 	for rows.Next() {
-		var city cityReturn
+		var city CityReturn
 
 		if err := rows.Scan(&city.Id, &city.Name, &city.Timezone); err != nil {
 			return nil, err

@@ -3,7 +3,7 @@ package rest
 import "github.com/gofiber/fiber/v2"
 
 type jsonReponse struct {
-	Error  string      `json:"error"`
+	Error  string      `json:"error,omitempty"`
 	Result interface{} `json:"result"`
 }
 
