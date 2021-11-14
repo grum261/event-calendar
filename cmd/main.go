@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"flag"
 	"fmt"
 	"log"
 	"os"
@@ -15,18 +14,17 @@ import (
 	"github.com/grum261/event-calendar/internal/rest"
 	"github.com/grum261/event-calendar/internal/service"
 	"github.com/jackc/pgx/v4/pgxpool"
-	"github.com/joho/godotenv"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
 
 func main() {
-	var envPath string
+	// var envPath string
 
-	flag.StringVar(&envPath, "env", "", "")
-	flag.Parse()
+	// flag.StringVar(&envPath, "env", "", "")
+	// flag.Parse()
 
-	errCh, err := run(envPath)
+	errCh, err := run("")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -66,9 +64,9 @@ func newServer(conf serverConfig) (*fiber.App, error) {
 }
 
 func run(env string) (<-chan error, error) {
-	if err := godotenv.Load(env); err != nil {
-		log.Fatal(err)
-	}
+	// if err := godotenv.Load(env); err != nil {
+	// 	log.Fatal(err)
+	// }
 
 	logger, err := zap.NewProduction()
 	if err != nil {
@@ -108,13 +106,13 @@ func run(env string) (<-chan error, error) {
 				logger.Info("OK", fields...)
 			}
 
-			return c.Next()
+			return nil
 		}
 	}
 
 	srv, err := newServer(serverConfig{
 		Address:     ":8000",
-		DB:          &pgxpool.Pool{},
+		DB:          pool,
 		Logger:      logger,
 		Middlewares: []func() func(*fiber.Ctx) error{logging},
 	})
@@ -124,7 +122,7 @@ func run(env string) (<-chan error, error) {
 
 	errCh := make(chan error, 1)
 
-	ctx, stop := signal.NotifyContext(context.TODO(), os.Interrupt, syscall.SIGTERM, syscall.SIGQUIT)
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM, syscall.SIGQUIT)
 
 	go func() {
 		<-ctx.Done()

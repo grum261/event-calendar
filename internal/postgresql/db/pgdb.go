@@ -7,7 +7,7 @@ import (
 	"github.com/jackc/pgx/v4"
 )
 
-type postgresql interface {
+type pgdb interface {
 	Begin(context.Context) (pgx.Tx, error)
 	Query(context.Context, string, ...interface{}) (pgx.Rows, error)
 	QueryRow(context.Context, string, ...interface{}) pgx.Row
@@ -15,10 +15,10 @@ type postgresql interface {
 }
 
 type Queries struct {
-	db postgresql
+	db pgdb
 }
 
-func NewQueries(db postgresql) *Queries {
+func NewQueries(db pgdb) *Queries {
 	return &Queries{
 		db: db,
 	}
