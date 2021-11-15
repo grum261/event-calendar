@@ -8,7 +8,7 @@ import (
 )
 
 type EventPartService interface {
-	Update(ctx context.Context, id int, p models.EventPartCreateParameters) error
+	Update(ctx context.Context, p models.EventPartUpdateParameters) error
 	Delete(ctx context.Context, id int) error
 }
 

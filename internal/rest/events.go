@@ -2,6 +2,7 @@ package rest
 
 import (
 	"context"
+	"sort"
 	"strconv"
 	"time"
 
@@ -13,6 +14,7 @@ type EventService interface {
 	Create(ctx context.Context, p models.EventInsertParameters) (int, []int, error)
 	Update(ctx context.Context, eventId int, p models.EventUpdateParameters) error
 	Delete(ctx context.Context, id int) error
+	GetByYearMonth(ctx context.Context, year, monht int) ([]models.Event, error)
 }
 
 type EventHandler struct {
@@ -33,7 +35,7 @@ type EventCreateRequest struct {
 	EventParts []EventPartCreateRequest `json:"eventParts"`
 }
 
-type EventResponse struct {
+type EventCreateUpdateResponse struct {
 	Id         int                  `json:"id"`
 	Name       string               `json:"name"`
 	StartDate  time.Time            `json:"startDate"`
@@ -50,10 +52,22 @@ type EventUpdateRequest struct {
 	EventParts []EventPartUpdateRequest `json:"eventParts"`
 }
 
+type EventGetResponse struct {
+	Date   time.Time `json:"date"`
+	Events *[]Event  `json:"events"`
+}
+
+type Event struct {
+	Id   int    `json:"id"`
+	Name string `json:"name"`
+	URL  string `json:"url,omitempty"`
+}
+
 func (e *EventHandler) registerRoutes(r fiber.Router) {
 	r.Post("/events", e.create)
 	r.Put("/events/:id", e.update)
 	r.Delete("/events/:id", e.delete)
+	r.Get("/events/:year/:month", e.getByYearMonth)
 }
 
 func (e *EventHandler) create(c *fiber.Ctx) error {
@@ -64,10 +78,12 @@ func (e *EventHandler) create(c *fiber.Ctx) error {
 	}
 
 	p := models.EventInsertParameters{
-		Name:      req.Name,
-		StartDate: req.StartDate,
-		EndDate:   req.EndDate,
-		URL:       req.URL,
+		EventCommons: models.EventCommons{
+			Name:      req.Name,
+			StartDate: req.StartDate,
+			EndDate:   req.EndDate,
+			URL:       req.URL,
+		},
 	}
 
 	// TODO: прописать логику для ивента, проходящего 1 день и у которого нет частей
@@ -91,7 +107,7 @@ func (e *EventHandler) create(c *fiber.Ctx) error {
 		return respondInternalError(c, err)
 	}
 
-	res := EventResponse{
+	res := EventCreateUpdateResponse{
 		Id:         eventId,
 		Name:       req.Name,
 		StartDate:  req.StartDate,
@@ -129,13 +145,16 @@ func (e *EventHandler) update(c *fiber.Ctx) error {
 	}
 
 	p := models.EventUpdateParameters{
-		Name:      req.Name,
-		StartDate: req.StartDate,
-		EndDate:   req.EndDate,
-		URL:       req.URL,
+		Id: id,
+		EventCommons: models.EventCommons{
+			Name:      req.Name,
+			StartDate: req.StartDate,
+			EndDate:   req.EndDate,
+			URL:       req.URL,
+		},
 	}
 
-	res := EventResponse{
+	res := EventCreateUpdateResponse{
 		Id:        id,
 		Name:      req.Name,
 		StartDate: req.StartDate,
@@ -157,16 +176,7 @@ func (e *EventHandler) update(c *fiber.Ctx) error {
 			},
 		})
 
-		*res.EventParts = append(*res.EventParts, EventPartResponse{
-			Id:          ep.Id,
-			Name:        ep.Name,
-			Age:         ep.Age,
-			Description: ep.Description,
-			Address:     ep.Address,
-			Place:       ep.Place,
-			StartTime:   ep.StartTime,
-			EndTime:     ep.EndTime,
-		})
+		*res.EventParts = append(*res.EventParts, EventPartResponse(ep))
 	}
 
 	if err := e.svc.Update(c.Context(), id, p); err != nil {
@@ -187,4 +197,48 @@ func (e *EventHandler) delete(c *fiber.Ctx) error {
 	}
 
 	return respondOK(c, id)
+}
+
+func (e *EventHandler) getByYearMonth(c *fiber.Ctx) error {
+	year, err := c.ParamsInt("year")
+	if err != nil {
+		return respondUnprocessableError(c, err)
+	}
+
+	month, err := c.ParamsInt("month")
+	if err != nil {
+		return respondUnprocessableError(c, err)
+	}
+
+	events, err := e.svc.GetByYearMonth(c.Context(), year, month)
+	if err != nil {
+		return respondInternalError(c, err)
+	}
+
+	m := map[time.Time][]Event{}
+
+	for _, ev := range events {
+		m[ev.Date] = append(m[ev.Date], Event{
+			Id:   ev.Id,
+			Name: ev.Name,
+			URL:  ev.URL,
+		})
+	}
+
+	var res []EventGetResponse
+
+	for k := range m {
+		v := m[k]
+
+		res = append(res, EventGetResponse{
+			Date:   k,
+			Events: &v,
+		})
+	}
+
+	sort.SliceStable(res, func(i, j int) bool {
+		return res[i].Date.Before(res[j].Date)
+	})
+
+	return respondOK(c, res)
 }

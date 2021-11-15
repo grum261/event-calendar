@@ -58,7 +58,7 @@ func newServer(conf serverConfig) (*fiber.App, error) {
 
 	store := postgresql.NewStore(conf.DB)
 	svc := service.NewServices(store.Tag, store.Event, store.EventPart)
-	h := rest.NewHandlers(svc.Tag, svc.Event)
+	h := rest.NewHandlers(svc.Tag, svc.Event, svc.EventPart)
 
 	h.RegisterRoutes(r)
 

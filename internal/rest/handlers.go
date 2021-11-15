@@ -4,22 +4,20 @@ import "github.com/gofiber/fiber/v2"
 
 type Handlers struct {
 	*TagHandler
-	// *CityHandler
 	*EventHandler
+	*EventPartHandler
 }
 
-func NewHandlers(t TagService, e EventService) *Handlers {
+func NewHandlers(t TagService, e EventService, ep EventPartService) *Handlers {
 	return &Handlers{
-		TagHandler: newTagHandler(t),
-		// CityHandler:  newCityHandler(c),
-		EventHandler: newEventHandler(e),
+		TagHandler:       newTagHandler(t),
+		EventHandler:     newEventHandler(e),
+		EventPartHandler: newEventPartHandler(ep),
 	}
 }
 
 func (h *Handlers) RegisterRoutes(r fiber.Router) {
 	h.TagHandler.registerRoutes(r)
-
-	// h.CityHandler.registerRoutes(r)
 
 	h.EventHandler.registerRoutes(r)
 }
